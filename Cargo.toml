@@ -1,6 +1,7 @@
 [package]
 name = "restcha-rust-mongodb"
 version = "0.1.0"
-authors = ["imolinuevo <imolinuevo@deloitte.es>"]
+authors = ["imolinuevo <i.m.parron@opendeusto.es>"]
 
 [dependencies]
+rocket = "0.4.0-rc.1"
