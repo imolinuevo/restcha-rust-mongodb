@@ -1,0 +1,6 @@
+[package]
+name = "restcha-rust-mongodb"
+version = "0.1.0"
+authors = ["imolinuevo <imolinuevo@deloitte.es>"]
+
+[dependencies]
