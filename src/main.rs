@@ -1,8 +1,8 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use] extern crate rocket;
+#[macro_use] extern crate rocket_contrib;
 #[macro_use] extern crate serde_derive;
-extern crate rocket_contrib;
-use rocket_contrib::json::Json;
+use rocket_contrib::json::{Json, JsonValue};
 use rocket::Request;
 
 fn main() {
@@ -12,15 +12,22 @@ fn main() {
     .launch();
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct User {
     name: String,
     birthdate: String,
 }
 
 #[post("/hello", format = "json", data = "<user>")]
-fn hello(user: Json<User>) -> String {
-    format!("username: {}, birthdate {}", user.name, user.birthdate)
+fn hello(user: Json<User>) -> JsonValue {
+    json!({
+        "message": "",
+        "data": {
+            "id": "1",
+            "name": user.name,
+            "birthdate": user.birthdate
+        }
+    })
 }
 
 #[catch(404)]
