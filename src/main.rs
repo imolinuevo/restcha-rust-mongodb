@@ -3,7 +3,6 @@
 #[macro_use] extern crate rocket_contrib;
 #[macro_use] extern crate serde_derive;
 use rocket_contrib::json::{Json, JsonValue};
-use rocket::Request;
 
 fn main() {
     rocket::ignite()
@@ -31,11 +30,17 @@ fn hello(user: Json<User>) -> JsonValue {
 }
 
 #[catch(404)]
-fn not_found(req: &Request) -> String {
-    format!("Sorry, '{}' is not a valid path.", req.uri())
+fn not_found() -> JsonValue {
+    json!({
+        "message": "Error 404: Not found",
+        "data": {}
+    })
 }
 
 #[catch(422)]
-fn invalid_entity() -> String {
-    format!("Invalid input data")
+fn invalid_entity() -> JsonValue {
+    json!({
+        "message": "Error 422: Unprocessable Entity",
+        "data": {}
+    })
 }
