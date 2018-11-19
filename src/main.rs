@@ -23,7 +23,8 @@ pub fn rocket() -> Rocket {
         bad_request])
     .mount("/", routes![
         hello,
-        create_pet
+        create_pet,
+        update_pet
     ])
 }
 
@@ -85,6 +86,20 @@ struct Tag {
 
 #[post("/pet", format = "json", data = "<pet>")]
 fn create_pet(pet: Json<Pet>) -> JsonValue {
+    match pet.validate() {
+        Ok(_) => (
+            json!({
+                "message": format!("Pet {} created successfully.", pet.name)
+            })
+        ),
+        Err(_e) => (
+            bad_request()
+        )
+    }
+}
+
+#[put("/pet", format = "json", data = "<pet>")]
+fn update_pet(pet: Json<Pet>) -> JsonValue {
     match pet.validate() {
         Ok(_) => (
             json!({

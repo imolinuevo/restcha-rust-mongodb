@@ -63,3 +63,26 @@ fn test_create_pet() {
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
 }
+
+#[test]
+fn test_update_pet() {
+    let client = Client::new(rocket()).expect("valid rocket instance");
+    let response = client.put("/pet")
+        .body(json!({
+            "id": 0,
+            "category": {
+                "id": 0,
+                "name": "string"
+            },
+            "name": "doggie",
+            "tags": [{
+                "id": 0,
+                "name": "string"
+            }],
+            "status": "available"
+            }).to_string()
+        )
+        .header(ContentType::JSON)
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+}
