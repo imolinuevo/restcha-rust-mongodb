@@ -17,8 +17,14 @@ fn main() {
 
 pub fn rocket() -> Rocket {
     rocket::ignite()
-    .register(catchers![not_found, invalid_entity, bad_request])
-    .mount("/", routes![hello])
+    .register(catchers![
+        not_found,
+        invalid_entity,
+        bad_request])
+    .mount("/", routes![
+        hello,
+        create_pet
+    ])
 }
 
 #[derive(Deserialize, Validate)]
@@ -39,6 +45,50 @@ fn hello(user: Json<User>) -> JsonValue {
                     "name": user.name,
                     "birthdate": user.birthdate
                 }
+            })
+        ),
+        Err(_e) => (
+            bad_request()
+        )
+    }
+}
+
+#[derive(Deserialize, Validate)]
+struct Pet {
+    #[validate(range(min = "1", max = "65535"))]
+    id: i32,
+    #[validate]
+    category: Category,
+    #[validate(length(min = "1"))]
+    name: String,
+    #[validate]
+    tags: Vec<Tag>,
+    #[validate(length(min = "1"))]
+    status: String
+}
+
+#[derive(Deserialize, Validate)]
+struct Category {
+    #[validate(range(min = "1", max = "65535"))]
+    id: i32,
+    #[validate(length(min = "1"))]
+    name: String,
+}
+
+#[derive(Deserialize, Validate)]
+struct Tag {
+    #[validate(range(min = "1", max = "65535"))]
+    id: i32,
+    #[validate(length(min = "1"))]
+    name: String,
+}
+
+#[post("/pet", format = "json", data = "<pet>")]
+fn create_pet(pet: Json<Pet>) -> JsonValue {
+    match pet.validate() {
+        Ok(_) => (
+            json!({
+                "message": format!("Pet {} created successfully.", pet.name)
             })
         ),
         Err(_e) => (

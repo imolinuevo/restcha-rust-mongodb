@@ -40,3 +40,26 @@ fn test_422() {
         .dispatch();
     assert_eq!(response.status(), Status::UnprocessableEntity);
 }
+
+#[test]
+fn test_create_pet() {
+    let client = Client::new(rocket()).expect("valid rocket instance");
+    let response = client.post("/pet")
+        .body(json!({
+            "id": 0,
+            "category": {
+                "id": 0,
+                "name": "string"
+            },
+            "name": "doggie",
+            "tags": [{
+                "id": 0,
+                "name": "string"
+            }],
+            "status": "available"
+            }).to_string()
+        )
+        .header(ContentType::JSON)
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+}
