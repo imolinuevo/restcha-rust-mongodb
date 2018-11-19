@@ -5,6 +5,7 @@
 #[macro_use] extern crate validator_derive;
 extern crate validator;
 
+use rocket::request::Form;
 use rocket::Rocket;
 use rocket_contrib::json::{Json, JsonValue};
 use validator::Validate;
@@ -17,8 +18,18 @@ fn main() {
 
 pub fn rocket() -> Rocket {
     rocket::ignite()
-    .register(catchers![not_found, invalid_entity, bad_request])
-    .mount("/", routes![hello])
+    .register(catchers![
+        not_found,
+        invalid_entity,
+        bad_request])
+    .mount("/", routes![
+        hello,
+        create_pet,
+        update_pet,
+        get_pet_by_id,
+        delete_pet_by_id,
+        edit_pet_by_id
+    ])
 }
 
 #[derive(Deserialize, Validate)]
@@ -39,6 +50,100 @@ fn hello(user: Json<User>) -> JsonValue {
                     "name": user.name,
                     "birthdate": user.birthdate
                 }
+            })
+        ),
+        Err(_e) => (
+            bad_request()
+        )
+    }
+}
+
+#[derive(Deserialize, Validate)]
+struct Pet {
+    #[validate(range(min = "1", max = "65535"))]
+    id: i32,
+    #[validate]
+    category: Category,
+    #[validate(length(min = "1"))]
+    name: String,
+    #[validate]
+    tags: Vec<Tag>,
+    #[validate(length(min = "1"))]
+    status: String
+}
+
+#[derive(Deserialize, Validate)]
+struct Category {
+    #[validate(range(min = "1", max = "65535"))]
+    id: i32,
+    #[validate(length(min = "1"))]
+    name: String,
+}
+
+#[derive(Deserialize, Validate)]
+struct Tag {
+    #[validate(range(min = "1", max = "65535"))]
+    id: i32,
+    #[validate(length(min = "1"))]
+    name: String,
+}
+
+#[post("/pet", format = "json", data = "<pet>")]
+fn create_pet(pet: Json<Pet>) -> JsonValue {
+    match pet.validate() {
+        Ok(_) => (
+            json!({
+                "message": format!("Pet {} created successfully.", pet.name)
+            })
+        ),
+        Err(_e) => (
+            bad_request()
+        )
+    }
+}
+
+#[put("/pet", format = "json", data = "<pet>")]
+fn update_pet(pet: Json<Pet>) -> JsonValue {
+    match pet.validate() {
+        Ok(_) => (
+            json!({
+                "message": format!("Pet {} created successfully.", pet.name)
+            })
+        ),
+        Err(_e) => (
+            bad_request()
+        )
+    }
+}
+
+#[get("/pet/<pet_id>")]
+fn get_pet_by_id(pet_id: i32) -> JsonValue {
+    json!({
+        "message": format!("Pet {} requested successfully.", pet_id)
+    })
+}
+
+#[delete("/pet/<pet_id>")]
+fn delete_pet_by_id(pet_id: i32) -> JsonValue {
+    json!({
+        "message": format!("Pet {} deleted successfully.", pet_id)
+    })
+}
+
+#[derive(FromForm, Validate)]
+struct EditPetData {
+    #[validate(length(min = "1"))]
+    name: String,
+    #[validate(length(min = "1"))]
+    status: String,
+}
+
+#[post("/pet/<pet_id>", data = "<edit_pet_data>")]
+fn edit_pet_by_id(pet_id: i32, edit_pet_data: Form<EditPetData>) -> JsonValue {
+    match edit_pet_data.validate() {
+        Ok(_) => (
+            json!({
+                "message": format!("Pet {} edited successfully.", pet_id)
             })
         ),
         Err(_e) => (
