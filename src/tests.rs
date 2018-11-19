@@ -86,3 +86,29 @@ fn test_update_pet() {
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
 }
+
+#[test]
+fn test_get_pet_by_id() {
+    let client = Client::new(rocket()).expect("valid rocket instance");
+    let response = client.get("/pet/0")
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+}
+
+#[test]
+fn test_delete_pet_by_id() {
+    let client = Client::new(rocket()).expect("valid rocket instance");
+    let response = client.delete("/pet/0")
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+}
+
+#[test]
+fn test_edit_pet_by_id() {
+    let client = Client::new(rocket()).expect("valid rocket instance");
+    let response = client.post("/pet/0")
+        .body("name=doggie&status=available")
+        .header(ContentType::Form)
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+}
