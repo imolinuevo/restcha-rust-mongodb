@@ -7,3 +7,7 @@ The **restcha** test is a high performance api-rest stress based challenge focus
 > Curently the *restcha test* is in WIP, so this project will be updated when the alfa version of the test is released
 
 Take into account that the technologies used in this project are meant to be a personal preference, and don't need to be the way to go cutting edge technologies. If you find the *restcha test* interesting you can contribute to any of the competing projects, launch your own competing project or even contribute to the test itself.
+
+## Database installation
+
+In order to run this applications tests a ``MongoDB`` (version 4 or later) named **store** is required with a collection named **pet**. The default database host is set to ``localhost`` and the default port to ``27017``, the values can be changed in the main module under MongoDB configration constants.

@@ -16,6 +16,9 @@ use validator::Validate;
 
 #[cfg(test)] mod tests;
 
+static MONGO_HOST: &str = "localhost";
+static MONGO_PORT: u16 = 27017;
+
 fn main() {
     rocket().launch();
 }
@@ -34,6 +37,12 @@ pub fn rocket() -> Rocket {
         delete_pet_by_id,
         edit_pet_by_id
     ])
+}
+
+fn get_collection(database: &str, collection: &str) -> mongodb::coll::Collection {
+    let client = Client::connect(MONGO_HOST, MONGO_PORT)
+        .expect("Failed to initialize client.");
+    return client.db(database).collection(collection);
 }
 
 #[derive(Deserialize, Validate)]
@@ -122,10 +131,7 @@ fn update_pet(pet: Json<Pet>) -> JsonValue {
 
 #[get("/pet/<pet_id>")]
 fn get_pet_by_id(pet_id: i32) -> JsonValue {
-
-    let client = Client::connect("localhost", 27017)
-        .expect("Failed to initialize client.");
-    let coll = client.db("store").collection("pet");
+    let coll = get_collection("store", "pet");
     let cursor = coll.find(None, None).unwrap();
     let mut bundle: Vec<String> = Vec::new();
     for result in cursor {
