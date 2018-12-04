@@ -3,8 +3,8 @@
 #[macro_use] extern crate rocket_contrib;
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate validator_derive;
+#[macro_use] extern crate mongodb;
 extern crate validator;
-extern crate mongodb;
 
 use mongodb::{Bson, doc};
 use mongodb::{Client, ThreadedClient};
@@ -104,15 +104,35 @@ struct Tag {
 #[post("/pet", format = "json", data = "<pet>")]
 fn create_pet(pet: Json<Pet>) -> JsonValue {
     match pet.validate() {
-        Ok(_) => (
-            json!({
-                "message": format!("Pet {} created successfully.", pet.name)
-            })
-        ),
+        Ok(_) => (insert_pet_in_db(pet)),
         Err(_e) => (
             bad_request()
         )
     }
+}
+
+fn insert_pet_in_db(pet: Json<Pet>) -> JsonValue {
+    // TODO check by id if pet exists
+    // TODO split tags
+
+    let coll = get_collection("store", "pet");
+    coll.insert_one(doc!{
+        "id": pet.id,
+        "category": {
+            "id": pet.category.id,
+            "name": &pet.category.name
+        },
+        "name": &pet.name,
+        "tags": [{
+                "id": 0,
+                "name": "string"
+            }],
+        "status": &pet.status
+        }, None).ok().expect("Failed to insert pet.");
+    let response = json!({
+        "message": format!("Pet {} created successfully.", pet.name)
+    });
+    return response;
 }
 
 #[put("/pet", format = "json", data = "<pet>")]
