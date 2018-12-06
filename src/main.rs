@@ -116,14 +116,23 @@ fn insert_pet_in_db(pet: Json<Pet>) -> JsonValue {
 #[put("/pet", format = "json", data = "<pet>")]
 fn update_pet(pet: Json<Pet>) -> JsonValue {
     match pet.validate() {
-        Ok(_) => (
-            json!({
-                "message": format!("Pet {} updated successfully.", pet.name)
-            })
-        ),
+        Ok(_) => (update_pet_in_db(pet)),
         Err(_e) => (
             bad_request()
         )
+    }
+}
+
+fn update_pet_in_db(pet: Json<Pet>) -> JsonValue {
+    let coll = get_collection("store", "pet");
+    let cursor = coll.find(Some(doc!{"id": pet.id}), None).unwrap();
+    if cursor.count() > 0 {
+        coll.delete_one(doc!{"id": pet.id}, None).unwrap();
+        return insert_pet_in_db(pet);
+    } else {
+        return json!({
+            "message": format!("Pet {} not found.", pet.id)
+        });
     }
 }
 
