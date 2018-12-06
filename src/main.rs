@@ -85,27 +85,32 @@ fn create_pet(pet: Json<Pet>) -> JsonValue {
 }
 
 fn insert_pet_in_db(pet: Json<Pet>) -> JsonValue {
-    // TODO check by id if pet exists
     // TODO split tags
-
     let coll = get_collection("store", "pet");
-    coll.insert_one(doc!{
-        "id": pet.id,
-        "category": {
-            "id": pet.category.id,
-            "name": &pet.category.name
-        },
-        "name": &pet.name,
-        "tags": [{
-                "id": 0,
-                "name": "string"
-            }],
-        "status": &pet.status
-        }, None).ok().expect("Failed to insert pet.");
-    let response = json!({
-        "message": format!("Pet {} created successfully.", pet.name)
-    });
-    return response;
+    let cursor = coll.find(Some(doc!{"id": pet.id}), None).unwrap();
+    if cursor.count() == 0 {
+        let coll = get_collection("store", "pet");
+        coll.insert_one(doc!{
+            "id": pet.id,
+            "category": {
+                "id": pet.category.id,
+                "name": &pet.category.name
+            },
+            "name": &pet.name,
+            "tags": [{
+                    "id": 0,
+                    "name": "string"
+                }],
+            "status": &pet.status
+            }, None).ok().expect("Failed to insert pet.");
+        return json!({
+            "message": format!("Pet {} created successfully.", pet.name)
+        });
+    } else {
+        return json!({
+            "message": format!("Pet {} already inserted.", pet.id)
+        });
+    }
 }
 
 #[put("/pet", format = "json", data = "<pet>")]
