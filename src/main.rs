@@ -140,7 +140,7 @@ fn update_pet(pet: Json<Pet>) -> JsonValue {
     match pet.validate() {
         Ok(_) => (
             json!({
-                "message": format!("Pet {} created successfully.", pet.name)
+                "message": format!("Pet {} updated successfully.", pet.name)
             })
         ),
         Err(_e) => (
@@ -152,20 +152,26 @@ fn update_pet(pet: Json<Pet>) -> JsonValue {
 #[get("/pet/<pet_id>")]
 fn get_pet_by_id(pet_id: i32) -> JsonValue {
     let coll = get_collection("store", "pet");
-    let cursor = coll.find(None, None).unwrap();
-    let mut bundle: Vec<String> = Vec::new();
-    for result in cursor {
-        if let Ok(item) = result {
-            if let Some(&Bson::String(ref name)) = item.get("name") {
-                bundle.push(name.to_string())
+    let cursor = coll.find(Some(doc!{"id": pet_id}), None).unwrap();
+    if cursor.count() > 0 {
+        let cursor = coll.find(Some(doc!{"id": pet_id}), None).unwrap();
+        let mut bundle: Vec<String> = Vec::new();
+        for result in cursor {
+            if let Ok(item) = result {
+                if let Some(&Bson::String(ref name)) = item.get("name") {
+                    bundle.push(name.to_string())
+                }
             }
         }
+        return json!({
+            "message": format!("Pet {} requested successfully.", pet_id),
+            "data": bundle
+        });
+    } else {
+        return json!({
+            "message": format!("Pet {} not found.", pet_id)
+        });
     }
-
-    json!({
-        "message": format!("Pet {} requested successfully.", pet_id),
-        "data": bundle
-    })
 }
 
 #[delete("/pet/<pet_id>")]

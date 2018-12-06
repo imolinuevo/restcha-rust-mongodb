@@ -46,14 +46,14 @@ fn test_create_pet() {
     let client = Client::new(rocket()).expect("valid rocket instance");
     let response = client.post("/pet")
         .body(json!({
-            "id": 0,
+            "id": 200,
             "category": {
-                "id": 0,
+                "id": 200,
                 "name": "string"
             },
             "name": "doggie",
             "tags": [{
-                "id": 0,
+                "id": 200,
                 "name": "string"
             }],
             "status": "available"
