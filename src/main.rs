@@ -30,7 +30,6 @@ pub fn rocket() -> Rocket {
         invalid_entity,
         bad_request])
     .mount("/", routes![
-        hello,
         create_pet,
         update_pet,
         get_pet_by_id,
@@ -43,32 +42,6 @@ fn get_collection(database: &str, collection: &str) -> mongodb::coll::Collection
     let client = Client::connect(MONGO_HOST, MONGO_PORT)
         .expect("Failed to initialize client.");
     return client.db(database).collection(collection);
-}
-
-#[derive(Deserialize, Validate)]
-struct User {
-    #[validate(length(min = "1"))]
-    name: String,
-    birthdate: String,
-}
-
-#[post("/hello", format = "json", data = "<user>")]
-fn hello(user: Json<User>) -> JsonValue {
-    match user.validate() {
-        Ok(_) => (
-            json!({
-                "message": "",
-                "data": {
-                    "id": "1",
-                    "name": user.name,
-                    "birthdate": user.birthdate
-                }
-            })
-        ),
-        Err(_e) => (
-            bad_request()
-        )
-    }
 }
 
 #[derive(Deserialize, Validate)]
