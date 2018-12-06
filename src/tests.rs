@@ -60,7 +60,7 @@ fn test_get_pet_by_id() {
 #[test]
 fn test_delete_pet_by_id() {
     let client = Client::new(rocket()).expect("valid rocket instance");
-    let response = client.delete("/pet/0")
+    let response = client.delete("/pet/200")
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
 }

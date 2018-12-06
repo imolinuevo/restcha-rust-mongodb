@@ -149,9 +149,18 @@ fn get_pet_by_id(pet_id: i32) -> JsonValue {
 
 #[delete("/pet/<pet_id>")]
 fn delete_pet_by_id(pet_id: i32) -> JsonValue {
-    json!({
-        "message": format!("Pet {} deleted successfully.", pet_id)
-    })
+    let coll = get_collection("store", "pet");
+    let cursor = coll.find(Some(doc!{"id": pet_id}), None).unwrap();
+    if cursor.count() > 0 {
+        coll.delete_one(doc!{"id": pet_id}, None).unwrap();
+        return json!({
+            "message": format!("Pet {} deleted successfully.", pet_id)
+        });
+    } else {
+        return json!({
+            "message": format!("Pet {} not found.", pet_id)
+        });
+    }
 }
 
 #[derive(FromForm, Validate)]
