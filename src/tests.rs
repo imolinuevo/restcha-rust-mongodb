@@ -31,14 +31,14 @@ fn test_update_pet() {
     let client = Client::new(rocket()).expect("valid rocket instance");
     let response = client.put("/pet")
         .body(json!({
-            "id": 0,
+            "id": 100,
             "category": {
-                "id": 0,
+                "id": 100,
                 "name": "string"
             },
             "name": "doggie",
             "tags": [{
-                "id": 0,
+                "id": 100,
                 "name": "string"
             }],
             "status": "available"
@@ -68,8 +68,8 @@ fn test_delete_pet_by_id() {
 #[test]
 fn test_edit_pet_by_id() {
     let client = Client::new(rocket()).expect("valid rocket instance");
-    let response = client.post("/pet/0")
-        .body("name=doggie&status=available")
+    let response = client.post("/pet/200")
+        .body("name=editedmegadoggie&status=available")
         .header(ContentType::Form)
         .dispatch();
     assert_eq!(response.status(), Status::Ok);

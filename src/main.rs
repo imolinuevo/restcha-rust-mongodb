@@ -189,9 +189,17 @@ struct EditPetData {
 fn edit_pet_by_id(pet_id: i32, edit_pet_data: Form<EditPetData>) -> JsonValue {
     match edit_pet_data.validate() {
         Ok(_) => (
-            json!({
-                "message": format!("Pet {} edited successfully.", pet_id)
-            })
+            {
+                let coll = get_collection("store", "pet");
+                let cursor = coll.find(Some(doc!{"id": pet_id}), None).unwrap();
+                if cursor.count() > 0 {
+                    let coll = get_collection("store", "pet");
+                    coll.update_one(doc!{"id": pet_id}, doc!{ "$set": {"name": &edit_pet_data.name, "status": &edit_pet_data.status} }, None).unwrap();
+                }
+                return json!({
+                    "message": format!("Pet {} edited successfully.", pet_id)
+                })
+            }
         ),
         Err(_e) => (
             bad_request()
