@@ -13,6 +13,7 @@ use rocket::request::Form;
 use rocket::Rocket;
 use rocket_contrib::json::{Json, JsonValue};
 use validator::Validate;
+use mongodb::ordered::OrderedDocument;
 
 #[cfg(test)] mod tests;
 
@@ -74,6 +75,15 @@ struct Tag {
     name: String,
 }
 
+impl Tag {
+    fn to_ordered_document(&self) -> OrderedDocument {
+        let mut tag: OrderedDocument = OrderedDocument::new();
+        tag.insert("id", self.id);
+        tag.insert("name", &self.name);
+        return tag;
+    }
+}
+
 #[post("/pet", format = "json", data = "<pet>")]
 fn create_pet(pet: Json<Pet>) -> JsonValue {
     match pet.validate() {
@@ -90,6 +100,11 @@ fn insert_pet_in_db(pet: Json<Pet>) -> JsonValue {
     let cursor = coll.find(Some(doc!{"id": pet.id}), None).unwrap();
     if cursor.count() == 0 {
         let coll = get_collection("store", "pet");
+        let tag = &pet.tags[0];
+        let tag_example: Tag = Tag {
+            id: tag.id,
+            name: tag.name.to_string(),
+        };
         coll.insert_one(doc!{
             "id": pet.id,
             "category": {
@@ -97,10 +112,7 @@ fn insert_pet_in_db(pet: Json<Pet>) -> JsonValue {
                 "name": &pet.category.name
             },
             "name": &pet.name,
-            "tags": [{
-                    "id": 0,
-                    "name": "string"
-                }],
+            "tags": [tag_example.to_ordered_document()],
             "status": &pet.status
             }, None).ok().expect("Failed to insert pet.");
         return json!({
