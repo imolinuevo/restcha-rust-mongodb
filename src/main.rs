@@ -6,7 +6,7 @@
 #[macro_use] extern crate mongodb;
 extern crate validator;
 
-use mongodb::doc;
+use mongodb::{Bson, doc};
 use mongodb::{Client, ThreadedClient};
 use mongodb::db::ThreadedDatabase;
 use rocket::request::Form;
@@ -95,16 +95,18 @@ fn create_pet(pet: Json<Pet>) -> JsonValue {
 }
 
 fn insert_pet_in_db(pet: Json<Pet>) -> JsonValue {
-    // TODO split tags
     let coll = get_collection("store", "pet");
     let cursor = coll.find(Some(doc!{"id": pet.id}), None).unwrap();
     if cursor.count() == 0 {
-        let coll = get_collection("store", "pet");
-        let tag = &pet.tags[0];
-        let tag_example: Tag = Tag {
-            id: tag.id,
-            name: tag.name.to_string(),
-        };
+        let coll = get_collection("store", "pet");        
+        let mut bson_tags: Vec<Bson> = Vec::new();
+        for tag in &pet.tags {
+            let new_tag: Tag = Tag {
+                id: tag.id,
+                name: tag.name.to_string(),
+            };
+            bson_tags.push(Bson::from(new_tag.to_ordered_document()));
+        }
         coll.insert_one(doc!{
             "id": pet.id,
             "category": {
@@ -112,7 +114,7 @@ fn insert_pet_in_db(pet: Json<Pet>) -> JsonValue {
                 "name": &pet.category.name
             },
             "name": &pet.name,
-            "tags": [tag_example.to_ordered_document()],
+            "tags": bson_tags,
             "status": &pet.status
             }, None).ok().expect("Failed to insert pet.");
         return json!({
