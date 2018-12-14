@@ -6,7 +6,7 @@
 #[macro_use] extern crate mongodb;
 extern crate validator;
 
-use mongodb::{Bson, doc};
+use mongodb::doc;
 use mongodb::{Client, ThreadedClient};
 use mongodb::db::ThreadedDatabase;
 use rocket::request::Form;
@@ -139,26 +139,22 @@ fn update_pet_in_db(pet: Json<Pet>) -> JsonValue {
 #[get("/pet/<pet_id>")]
 fn get_pet_by_id(pet_id: i32) -> JsonValue {
     let coll = get_collection("store", "pet");
-    let cursor = coll.find(Some(doc!{"id": pet_id}), None).unwrap();
-    if cursor.count() > 0 {
-        let cursor = coll.find(Some(doc!{"id": pet_id}), None).unwrap();
-        let mut bundle: Vec<String> = Vec::new();
-        for result in cursor {
-            if let Ok(item) = result {
-                if let Some(&Bson::String(ref name)) = item.get("name") {
-                    bundle.push(name.to_string())
-                }
-            }
-        }
-        return json!({
-            "message": format!("Pet {} requested successfully.", pet_id),
-            "data": bundle
-        });
-    } else {
-        return json!({
+    let mut cursor = coll.find(Some(doc!{"id": pet_id}), None).unwrap();
+    let item = cursor.next();
+    let bundle: mongodb::Document;
+    match item {
+        Some(Ok(doc)) => bundle = doc,
+        Some(Err(_)) => return json!({
             "message": format!("Pet {} not found.", pet_id)
-        });
+        }),
+        None => return json!({
+            "message": format!("Pet {} not found.", pet_id)
+        }),
     }
+    return json!({
+        "message": format!("Pet {} requested successfully.", pet_id),
+        "data": bundle
+    });
 }
 
 #[delete("/pet/<pet_id>")]
