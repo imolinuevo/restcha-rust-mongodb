@@ -4,56 +4,18 @@ use rocket::http::ContentType;
 use rocket::http::Status;
 
 #[test]
-fn test_200() {
-    let client = Client::new(rocket()).expect("valid rocket instance");
-    let response = client.post("/hello")
-        .body("{ \"name\": \"alice\", \"birthdate\": \"10/10/1991\"}")
-        .header(ContentType::JSON)
-        .dispatch();
-    assert_eq!(response.status(), Status::Ok);
-}
-
-#[test]
-fn test_400() {
-    let client = Client::new(rocket()).expect("valid rocket instance");
-    let response = client.post("/hello")
-        .body("{ \"name\": \"\", \"birthdate\": \"10/10/1991\"}")
-        .header(ContentType::JSON)
-        .dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    // should be Status::BadRequest
-}
-
-#[test]
-fn test_404() {
-    let client = Client::new(rocket()).expect("valid rocket instance");
-    let response = client.get("/helloa").dispatch();
-    assert_eq!(response.status(), Status::NotFound);
-}
-
-#[test]
-fn test_422() {
-    let client = Client::new(rocket()).expect("valid rocket instance");
-    let response = client.post("/hello")
-        .body("{}")
-        .header(ContentType::JSON)
-        .dispatch();
-    assert_eq!(response.status(), Status::UnprocessableEntity);
-}
-
-#[test]
 fn test_create_pet() {
     let client = Client::new(rocket()).expect("valid rocket instance");
     let response = client.post("/pet")
         .body(json!({
-            "id": 0,
+            "id": 200,
             "category": {
-                "id": 0,
+                "id": 200,
                 "name": "string"
             },
             "name": "doggie",
             "tags": [{
-                "id": 0,
+                "id": 200,
                 "name": "string"
             }],
             "status": "available"
@@ -69,14 +31,14 @@ fn test_update_pet() {
     let client = Client::new(rocket()).expect("valid rocket instance");
     let response = client.put("/pet")
         .body(json!({
-            "id": 0,
+            "id": 100,
             "category": {
-                "id": 0,
+                "id": 100,
                 "name": "string"
             },
             "name": "doggie",
             "tags": [{
-                "id": 0,
+                "id": 100,
                 "name": "string"
             }],
             "status": "available"
@@ -98,7 +60,7 @@ fn test_get_pet_by_id() {
 #[test]
 fn test_delete_pet_by_id() {
     let client = Client::new(rocket()).expect("valid rocket instance");
-    let response = client.delete("/pet/0")
+    let response = client.delete("/pet/200")
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
 }
@@ -106,8 +68,8 @@ fn test_delete_pet_by_id() {
 #[test]
 fn test_edit_pet_by_id() {
     let client = Client::new(rocket()).expect("valid rocket instance");
-    let response = client.post("/pet/0")
-        .body("name=doggie&status=available")
+    let response = client.post("/pet/200")
+        .body("name=editedmegadoggie&status=available")
         .header(ContentType::Form)
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
